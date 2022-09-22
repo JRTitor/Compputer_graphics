@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <GLFW/glfw3.h>
+
 
 using namespace std;
 
@@ -35,8 +37,6 @@ void func(const double& phi, const double& par_a, double& x, double& y) {
 
 void get_value(const double& par_a, const double& lhs_edge, const double& rhs_edge, const int& steps, vector<double>& y, vector<double>& x) {
     double phi = lhs_edge, step_size = (rhs_edge - lhs_edge) / steps;
-    vector<double> y(steps);
-    vector<double> x(steps);
 
     for (size_t i = 0; i < steps; ++i) {
         func(phi, par_a, &(x[i]), &(y[i]));  //  not sure about ampersands
@@ -45,4 +45,32 @@ void get_value(const double& par_a, const double& lhs_edge, const double& rhs_ed
 }
 void show_plot(const vector<double>& y, const vector<double>& x) {
   //  TODO
+      GLFWwindow* window;
+      if (!glfwInit())
+        return -1;
+
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        return -1;
+    }
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window)) {
+        /* Render here */
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+
+        /* Poll for and process events */
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+
 }
