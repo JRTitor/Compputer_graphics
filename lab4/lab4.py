@@ -94,7 +94,10 @@ surfaces = (
     (4,0,3,6)
     )
 
-def Cube():
+def Cube(approx=5):
+    x, y, z = get_xyz(nt=approx)
+    verticies = get_verticies(x, y, z)
+    edges = get_edges(x)
     glBegin(GL_LINES)
     for edge in edges:
         for vertex in edge:
@@ -117,7 +120,7 @@ def main():
     glTranslatef(0,0, -10)
 
     glRotatef(30, 2, 1, 0)
-
+    approx = 5
     run = True
     while run:
         events = pygame.event.get()
@@ -145,6 +148,11 @@ def main():
                     glRotatef(30, 0, 0, 1)
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
+                if event.key == pygame.K_EQUALS:
+                    approx += 1
+                if event.key == pygame.K_MINUS:
+                    if approx > 3:
+                        approx -= 1
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 4:
@@ -156,7 +164,7 @@ def main():
         #glRotatef(1, 3, 1, 1)
         #output.setText(slider.getValue())
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        Cube()
+        Cube(approx=approx)
         pygame.display.flip()
         pygame.time.wait(10)
 
