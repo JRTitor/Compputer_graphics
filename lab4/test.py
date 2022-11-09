@@ -1,49 +1,48 @@
+import pygame as pg
+from pygame.locals import *
+
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from OpenGL.GLUT import *
-import sys
-import math
 
-px = 300; py = 300
+cubeVertices = ((1,1,1),(1,1,-1),(1,-1,-1),(1,-1,1),(-1,1,1),(-1,-1,-1),(-1,-1,1),(-1,1,-1))
+cubeEdges = ((0,1),(0,3),(0,4),(1,2),(1,7),(2,5),(2,3),(3,6),(4,6),(4,7),(5,6),(5,7))
+cubeQuads = ((0,3,6,4),(2,5,6,3),(1,2,5,7),(1,0,4,7),(7,4,6,5),(2,3,0,1))
 
-def drawPlayer():
-    glColor3f(1,1,0)
-    glPointSize(8)
-    glBegin(GL_POINTS)
-    glVertex2i(px,py)
+def wireCube():
+    glBegin(GL_LINES)
+    for cubeEdge in cubeEdges:
+        for cubeVertex in cubeEdge:
+            glVertex3fv(cubeVertices[cubeVertex])
     glEnd()
 
-def display():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    drawPlayer()
-    glutSwapBuffers()
-
-# Here is my keyboard input code
-def buttons(key,x,y):
-    global px, py
-    if key == b'a':
-        px -= 5
-    if key == b'd':
-        px += 5
-    if key == b'w':
-        py -= 5
-    if key == b's':
-        py += 5
-    glutPostRedisplay()
-
-def init():
-    glClearColor(0.3,0.3,0.3,0)
-    gluOrtho2D(0,1024,512,0)    
+def solidCube():
+    glBegin(GL_QUADS)
+    for cubeQuad in cubeQuads:
+        for cubeVertex in cubeQuad:
+            glVertex3fv(cubeVertices[cubeVertex])
+    glEnd()
 
 def main():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(1024, 512)
-    display = glutCreateWindow("Raycaster in python")
-    init()
-    glutDisplayFunc(display)
-    glutKeyboardFunc(buttons)
-    glutMainLoop()
+    pg.init()
+    display = (1680, 1050)
+    pg.display.set_mode(display, DOUBLEBUF|OPENGL)
+
+    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+
+    glTranslatef(0.0, 0.0, -5)
+
+    while True:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                quit()
+
+        glRotatef(1, 1, 1, 1)
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        solidCube()
+        wireCube()
+        pg.display.flip()
+        pg.time.wait(10)
 
 if __name__ == "__main__":
     main()

@@ -94,6 +94,98 @@ surfaces = (
     (4,0,3,6)
     )
 
+def get_ijk():
+    def get_xyz(r_outter=2, r_inner=1, nt=5, a=00.5, h=1):
+        def cylinder(r, a=0, nt=5, h=1):
+            theta = np.linspace(-np.pi/2, np.pi/2, nt)
+            v = np.ones(nt) * h
+            x = r*np.cos(theta) - a
+            y = r*np.sin(theta)
+            z = v
+            return x, y, z
+
+        x, y, z = cylinder(r_outter, nt=nt, h=h)
+        x_1, y_1, z_1 = cylinder(r_outter, nt=nt, h=h)
+        z_1 = np.zeros_like(z_1)
+        x = np.concatenate((x, x_1), axis=0)
+        y = np.concatenate((y, y_1), axis=0)
+        z = np.concatenate((z, z_1), axis=0)
+
+        x_2, y_2, z_2 = cylinder(r_inner, nt=nt, a=a, h=h)
+        x_3, y_3, z_3 = cylinder(r_inner, nt=nt, a=a, h=h)
+        z_3 = np.zeros_like(z_3)
+        x_2 = np.concatenate((x_2, x_3), axis=0)
+        y_2 = np.concatenate((y_2, y_3), axis=0)
+        z_2 = np.concatenate((z_2, z_3), axis=0)
+
+        x = np.concatenate((x, x_2), axis=0)
+        y = np.concatenate((y, y_2), axis=0)
+        z = np.concatenate((z, z_2), axis=0)
+
+        return x, y, z
+    x, y, z = get_xyz()
+            i = np.array([])
+        j = np.array([])
+        k = np.array([])
+
+
+        for c in range(nt-1):
+            i = np.append(i, c)
+            j = np.append(j, c + 1)
+            k = np.append(k, c + nt)
+
+        for c in range(nt-1):
+            i = np.append(i, c + nt + 1)
+            j = np.append(j, c + nt)
+            k = np.append(k, c + 1)
+
+        for c in range(nt-1):
+            i = np.append(i, c + 2*nt)
+            j = np.append(j, c + 2*nt + 1)
+            k = np.append(k, c + 3*nt)
+
+        for c in range(nt-1):
+            i = np.append(i, c + 3*nt + 1)
+            j = np.append(j, c + 3*nt)
+            k = np.append(k, c + 2*nt + 1)
+
+        for c in range(nt-1):
+            i = np.append(i, 3*nt + c)
+            j = np.append(j, c + 3*nt + 1)
+            k = np.append(k, c + nt)
+
+        for c in range(nt-1):
+            i = np.append(i, c + nt + 1)
+            j = np.append(j, c + nt)
+            k = np.append(k, c + 3*nt + 1)
+
+        for c in range(nt-1):
+            i = np.append(i, c + 2*nt)
+            j = np.append(j, c +  2*nt + 1)
+            k = np.append(k, c)
+
+        for c in range(nt-1):
+            i = np.append(i, c + 1)
+            j = np.append(j, c)
+            k = np.append(k, c + 2*nt + 1)
+
+        i = np.append(i, 0)
+        j = np.append(j, 2*nt)
+        k = np.append(k, nt)
+
+        i = np.append(i, 2*nt)
+        j = np.append(j, 3*nt)
+        k = np.append(k, nt)
+
+        i = np.append(i, nt - 1)
+        j = np.append(j, 4*nt - 1)
+        k = np.append(k, 3*nt - 1)
+
+        i = np.append(i, nt - 1)
+        j = np.append(j, 2*nt - 1)
+        k = np.append(k, 4*nt - 1)
+
+        return i, j, k
 def Cube(approx=5):
     x, y, z = get_xyz(nt=approx)
     verticies = get_verticies(x, y, z)
