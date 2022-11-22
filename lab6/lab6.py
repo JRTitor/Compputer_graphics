@@ -1,13 +1,14 @@
 # Черных М80-305Б-20
-# Аппроксимация заданного 3D объекта выпуклыми многогранниками
-# с использванием средства OpenGL
-# Модель: цилинрическая подкова
+# Создание шейдерных анимационных эффектов в OpenGL 2.1
+# Для поверхности, созданной в л.р. №5, обеспечить выполнение следующего шейдерного эффекта:
+# Анимация. Прозрачность изменяется по синусоидальному закону
 
 import pygame
 import numpy as np
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+from math import pi, sin
 
 
 def make_vertices(r_outter=2, r_inner=1, nt=5, a=00.5, h=1):
@@ -40,6 +41,7 @@ def make_vertices(r_outter=2, r_inner=1, nt=5, a=00.5, h=1):
     vert = (tuple(x), tuple(y), tuple(z))
     vertices = tuple(map(list, zip(*vert)))
     return vertices
+
 
 def make_surfaces(nt=5):
     i = np.array([])
@@ -113,25 +115,37 @@ def make_surfaces(nt=5):
     surfaces = list(map(list, zip(*sur)))
     return surfaces
 
-def Cube(r_outter=2, r_inner=1, nt=5, a=00.5, h=1):
+def Cube(r_outter=2, r_inner=1, nt=5, a=00.5, h=1, trns=1):
     verticies = make_vertices(r_outter=r_outter, r_inner=r_inner, nt=nt, a=a, h=h)
     surfaces = make_surfaces(nt=nt)
+
     glBegin(GL_TRIANGLES)
     for surface in surfaces:
         for vertex in surface:
-            COLOR = ((1, 0, 0))
-            glMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE, COLOR)
+            COLOR = ((1, 0, 0, trns))
+            glMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, COLOR)
             glVertex3fv(verticies[vertex])
     glEnd()
 
 def main():
+    print('''\t(- =) аппроксимация, (h j) высота подковы, (r t) внешний радиус подковы,
+        (f g) внутренний радиус подковы, (a s) расстояние между полуокружностями подковы,
+        (x) вращение вокруг Ox, (y) вращение вокруг Oy, (z) вращение вокруг Oz,
+        стрелки перемещение по плоскости, колесико мыши масштаб,
+        Активация/деактивация эффекта прозраности (d a)
+        Увеличение/уменьшение скорости эффекта (d c)''')
     pygame.init()
     display = (800,600)
+    pygame.display.set_caption('Lab 6')
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     glTranslatef(0,0, -10)
     glRotatef(25, 2, 1, 0)
+
+
+    trns_flag = False
+    trns = 0
 
     run = True
     approx = 5
@@ -140,6 +154,8 @@ def main():
     a = 0.05
     h = 1
     run = True
+    pi_part = pi/12
+    pi_in = 0
     while run:
         events = pygame.event.get()
         for event in events:
@@ -192,6 +208,26 @@ def main():
                 if event.key == pygame.K_s:  #  distance_between_routter_and_r_inner-  s
                     if a > 0.03:
                         a -= 0.01
+                
+                if event.key == pygame.K_d:  #  turn on transparancy/increace frequency
+                    pi_part *= 2
+                    trns = abs(sin(pi_in))
+                    glEnable(GL_ALPHA_TEST)
+                    glEnable(GL_BLEND)
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                    glDisable(GL_CULL_FACE)
+                    trns_flag = True
+                if event.key == pygame.K_c:  #  decrease frequency of transparancy
+                    pi_part /= 2
+
+                if event.key == pygame.K_a:  # turn off transparancy
+                    trns_flag = False
+                    glEnable(GL_CULL_FACE)
+                    glCullFace(GL_FRONT)
+                    glDepthMask(GL_TRUE)
+                    glDisable(GL_ALPHA_TEST)
+                    glDisable(GL_BLEND)
+                    
   
             if event.type == pygame.MOUSEBUTTONDOWN: 
                 if event.button == 4:
@@ -202,8 +238,7 @@ def main():
 
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_FRONT)
+
 
         glLightfv(GL_LIGHT0, GL_POSITION, (0, 0, 2, 1))
         glLightfv(GL_LIGHT0, GL_AMBIENT, (0, 0, 0, 1))
@@ -211,8 +246,15 @@ def main():
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
+        
+        if trns_flag:
+            pi_in += pi_part
+            trns = (sin(pi_in) + 1 ) / 2
+            glEnable(GL_BLEND);
+            glDepthMask(GL_FALSE);
+        
 
-        Cube(r_outter=r_outter, r_inner=r_inner, nt=approx, a=a, h=h)
+        Cube(r_outter=r_outter, r_inner=r_inner, nt=approx, a=a, h=h, trns=trns)
        
         pygame.display.flip()
         pygame.time.wait(10)
